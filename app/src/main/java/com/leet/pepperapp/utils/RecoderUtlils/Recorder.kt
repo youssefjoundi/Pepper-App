@@ -31,7 +31,7 @@ class Recorder(private val mContext: Context) {
         mWavFilePath = wavFile
     }
 
-    fun start(chatAppViewModel: AppViewModel, showAnimation: () -> Unit) {
+    fun start(chatAppViewModel: AppViewModel) {
         if (mInProgress.get()) {
             Log.d(TAG, "Recording is in progress...")
             return
@@ -41,7 +41,7 @@ class Recorder(private val mContext: Context) {
 
         mExecutorThread = Thread {
             mInProgress.set(true)
-            threadFunction(chatAppViewModel, showAnimation)
+            threadFunction(chatAppViewModel)
             mInProgress.set(false)
         }
         mExecutorThread!!.start()
@@ -59,7 +59,7 @@ class Recorder(private val mContext: Context) {
         }
     }
 
-    private fun threadFunction(chatAppViewModel: AppViewModel, showAnimation: () -> Unit) {
+    private fun threadFunction(chatAppViewModel: AppViewModel) {
         try {
             if (ActivityCompat.checkSelfPermission(
                     mContext,
@@ -81,7 +81,7 @@ class Recorder(private val mContext: Context) {
                 AudioRecord(audioSource, sampleRateInHz, channelConfig, audioFormat, bufferSize)
             audioRecord.startRecording()
             val bufferSize1Sec = sampleRateInHz * bytesPerSample * channels
-            val bufferSize30Sec = bufferSize1Sec * 5
+            val bufferSize30Sec = bufferSize1Sec * 6
             val buffer30Sec = ByteBuffer.allocateDirect(bufferSize30Sec)
             val bufferRealtime = ByteBuffer.allocateDirect(bufferSize1Sec * 5)
             var timer = 0
@@ -146,10 +146,6 @@ class Recorder(private val mContext: Context) {
             audioRecord.release()
 
 
-
-            
-
-
             // Save 30 seconds of recording buffer in wav file
             WaveUtil.createWaveFile(
                 mWavFilePath,
@@ -159,6 +155,7 @@ class Recorder(private val mContext: Context) {
                 bytesPerSample
             )
 
+            chatAppViewModel.pepperState("think")
 
             chatAppViewModel.fetchChatResponse(mWavFilePath)
 

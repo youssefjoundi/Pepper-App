@@ -23,7 +23,7 @@ class AppViewModel @Inject constructor(
     private val defaultDispatcher: CoroutineDispatcher
 ) : ViewModel() {
 
-    private val _chatresponse = MutableStateFlow<ResultApi<reponseDto>>(ResultApi.Loading())
+    private val _chatresponse = MutableStateFlow<ResultApi<reponseDto>>(ResultApi.InitState())
 
 
     val responseResult = _chatresponse.asStateFlow()
@@ -47,6 +47,20 @@ class AppViewModel @Inject constructor(
         }
 
     }
+
+
+    fun pepperState(state : String) {
+        when(state) {
+            "think" -> {
+                _chatresponse.value = ResultApi.Thinking()
+                Log.i("Hello ", "From ViewModel : $state")
+            }
+            "init" -> {
+                Log.i("Hello ", "From ViewModel : $state")
+            }
+        }
+    }
+
 
 
 }
