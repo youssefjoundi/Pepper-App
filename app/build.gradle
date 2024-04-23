@@ -79,6 +79,10 @@ dependencies {
     implementation libs.qisdk
     implementation libs.qisdk.design
 
+    // Lottie animation
+    implementation libs.lottie
+
+
 
 }
 

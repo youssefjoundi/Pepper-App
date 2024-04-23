@@ -1,7 +1,29 @@
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center_horizontal|center_vertical"
+        >
+
+        <!-- Change visibility -->
+
+
+        <com.airbnb.lottie.LottieAnimationView
+            android:id="@+id/lottie_id"
+            android:layout_width="400dp"
+            android:layout_height="400dp"
+            android:visibility="visible"
+            app:lottie_autoPlay="true"
+            app:lottie_speed="1.0"
+            app:lottie_loop="true"
+            />
+
+
+    </LinearLayout>
 
     <ScrollView
         android:id="@+id/scrollView"

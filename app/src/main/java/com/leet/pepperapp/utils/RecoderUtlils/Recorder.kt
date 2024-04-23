@@ -31,14 +31,17 @@ class Recorder(private val mContext: Context) {
         mWavFilePath = wavFile
     }
 
-    fun start(chatAppViewModel: AppViewModel) {
+    fun start(chatAppViewModel: AppViewModel, showAnimation: () -> Unit) {
         if (mInProgress.get()) {
             Log.d(TAG, "Recording is in progress...")
             return
         }
+
+
+
         mExecutorThread = Thread {
             mInProgress.set(true)
-            threadFunction(chatAppViewModel)
+            threadFunction(chatAppViewModel, showAnimation)
             mInProgress.set(false)
         }
         mExecutorThread!!.start()
@@ -56,7 +59,7 @@ class Recorder(private val mContext: Context) {
         }
     }
 
-    private fun threadFunction(chatAppViewModel: AppViewModel) {
+    private fun threadFunction(chatAppViewModel: AppViewModel, showAnimation: () -> Unit) {
         try {
             if (ActivityCompat.checkSelfPermission(
                     mContext,

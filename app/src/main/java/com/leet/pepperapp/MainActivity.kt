@@ -4,23 +4,18 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.text.method.ScrollingMovementMethod
 import android.util.Log
 import android.view.View
 import android.widget.Button
-import android.widget.TextView
-import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
+import com.airbnb.lottie.LottieAnimationView
 import com.aldebaran.qi.sdk.QiContext
 import com.aldebaran.qi.sdk.QiSDK
 import com.aldebaran.qi.sdk.RobotLifecycleCallbacks
 import com.aldebaran.qi.sdk.builder.SayBuilder
-import com.aldebaran.qi.sdk.design.activity.RobotActivity
 import com.aldebaran.qi.sdk.`object`.conversation.Say
 import com.leet.pepperapp.network.remote.ResultApi
 import com.leet.pepperapp.utils.RecoderUtlils.Recorder
@@ -42,6 +37,8 @@ class MainActivity : AppCompatActivity(), RobotLifecycleCallbacks {
 
     private lateinit var recordButton: Button
 //    private lateinit var textView: TextView
+
+    private lateinit var animation : LottieAnimationView
 
 
 
@@ -66,26 +63,19 @@ class MainActivity : AppCompatActivity(), RobotLifecycleCallbacks {
 
 
 
-    @SuppressLint("SetTextI18n")
+    @SuppressLint("SetTextI18n", "MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-//        enableEdgeToEdge()
+
+
         setContentView(R.layout.activity_main)
-//        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-//            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-//            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-//            insets
-//        }
 
-
-
-        
 
         ActivityCompat.requestPermissions(this, permissions, REQUEST_RECORD_AUDIO_PERMISSION)
 
         hideSystemUI()
 
-
+        animation = findViewById(R.id.lottie_id)
 
         recordButton = findViewById(R.id.startButton)
         recordButton.setOnClickListener { onclick() }
@@ -133,15 +123,11 @@ class MainActivity : AppCompatActivity(), RobotLifecycleCallbacks {
                 }
             }
         }
-
-
-
-
-
-
-
-
     }
+
+
+
+
 
 
     private fun hideSystemUI() {
@@ -182,11 +168,29 @@ class MainActivity : AppCompatActivity(), RobotLifecycleCallbacks {
         Log.i(TAG, "Audio record is permitted")
     }
 
+    val showAnimation : () -> Unit = {
+        animation.setAnimation("record.json")
+        animation.visibility = View.VISIBLE
+        animation.playAnimation()
+    }
+
+
+
+    val stopAnimation : () -> Unit = {
+        animation.visibility = View.GONE
+        animation.cancelAnimation()
+    }
+
+
+
+
 
     private fun onclick() {
 
-        chatAppViewModel.fetchChatResponse("Heelo")
-//        recorder.start(chatAppViewModel)
+//        showAnimation("record.json")
+
+//        chatAppViewModel.fetchChatResponse("Heelo")
+        recorder.start(chatAppViewModel, showAnimation)
     }
 
 
