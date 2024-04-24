@@ -2,9 +2,15 @@ package com.leet.pepperapp.adapter
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
+import android.os.Handler
+import android.os.Looper
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import android.view.animation.AnimationUtils
 import androidx.recyclerview.widget.RecyclerView
+import com.leet.pepperapp.MainActivity
+import com.leet.pepperapp.R
 import com.leet.pepperapp.databinding.PepperItemBinding
 import com.leet.pepperapp.databinding.UserItemBinding
 import com.leet.pepperapp.model.ChatData
@@ -18,6 +24,7 @@ class RecyclerAdapter() : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         const val VIEW_TYPE_PEPPER = 0
         const val VIEW_TYPE_USER = 1
     }
+
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return when (viewType) {
@@ -58,6 +65,10 @@ class RecyclerAdapter() : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         listOfChat.clear()
         listOfChat.addAll(list)
         notifyDataSetChanged()
+    }
+
+    fun getData(): List<ChatData> {
+        return listOfChat
     }
 
     inner class PepperViewHolder(private val binding: PepperItemBinding) : RecyclerView.ViewHolder(binding.root) {

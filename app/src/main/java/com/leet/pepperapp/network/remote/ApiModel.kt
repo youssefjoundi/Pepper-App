@@ -31,6 +31,7 @@ object ApiModel {
                 json(Json {
                     prettyPrint = true
                     isLenient = true
+                    ignoreUnknownKeys = true
                 })
             }
 

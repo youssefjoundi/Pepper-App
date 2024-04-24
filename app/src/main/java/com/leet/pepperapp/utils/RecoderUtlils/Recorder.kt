@@ -21,7 +21,7 @@ class Recorder(private val mContext: Context) {
     private var mExecutorThread: Thread? = null
 
 
-    private val SILENCE_THRESHOLD = 1000 // Adjust as needed
+    private val SILENCE_THRESHOLD = 2000 // Adjust as needed
     private val SILENCE_DURATION_MS = 1000 // Adjust as needed
     private val SAMPLE_RATE = 44100
 

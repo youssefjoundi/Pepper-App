@@ -2,7 +2,7 @@
     <string name="app_name">Pepper App</string>
     <string name="start">Start</string>
     <string name="stop">Stop</string>
-    <string name="speech_recognition">Ask Pepper</string>
+    <string name="speech_recognition">Click To Ask Pepper</string>
     <string name="smart_pepper">Smart Pepper</string>
     <string name="papper_icon">User Icon</string>
     <string name="pepper_name">Pepper</string>

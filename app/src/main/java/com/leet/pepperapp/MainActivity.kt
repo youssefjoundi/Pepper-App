@@ -2,8 +2,11 @@ package com.leet.pepperapp
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.View
 import android.widget.Button
@@ -25,6 +28,7 @@ import com.leet.pepperapp.model.ChatData
 import com.leet.pepperapp.network.remote.ResultApi
 import com.leet.pepperapp.utils.RecoderUtlils.Recorder
 import com.leet.pepperapp.utils.RecoderUtlils.Recorder.Companion.TAG
+import com.leet.pepperapp.utils.resource
 import com.leet.pepperapp.viewmodel.AppViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
@@ -42,29 +46,18 @@ class MainActivity : AppCompatActivity(), RobotLifecycleCallbacks {
     private val chatAppViewModel: AppViewModel by viewModels()
 
     private lateinit var recordButton: Button
-    private lateinit var messageContainer: LinearLayout
-
-
-
 //    private lateinit var textView: TextView
-
     private lateinit var animation : LottieAnimationView
 
-
-
-
     private val recorder: Recorder = Recorder(this)
-
-
-    private var startRecording: Boolean = false
-
-
     private lateinit var papperTalk : String
-
-    private lateinit var outpoutFile : File
 
     @Volatile
     private var pepperSay: Boolean = false
+
+    @Volatile
+    private var pepperError: Boolean = false
+
 
 
 
@@ -79,45 +72,22 @@ class MainActivity : AppCompatActivity(), RobotLifecycleCallbacks {
 
     private lateinit var listChat : MutableList<ChatData>
 
-
-    @SuppressLint("SetTextI18n", "MissingInflatedId", "NotifyDataSetChanged")
+    @SuppressLint("SetTextI18n", "MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-
         setContentView(binding.root)
-
-
         ActivityCompat.requestPermissions(this, permissions, REQUEST_RECORD_AUDIO_PERMISSION)
-
         hideSystemUI()
-
         listChat = mutableListOf(
             ChatData(
                 message = "Hello, I am Pepper , how can I help you",
                 type = "PEPPER"
             )
         )
-
-
         animation = findViewById(R.id.lottie_id)
-
-//        messageContainer = findViewById(R.id.messageContainer)
-//
         recordButton = findViewById(R.id.startButton)
         recordButton.setOnClickListener { onclick() }
-//
-//        textView = findViewById(R.id.my_text)
-//        textView.movementMethod = ScrollingMovementMethod()
-
-
-        outpoutFile = File( this.filesDir, "recording.webm")
-
-
-
-
         recorder.setFilePath(getFilePath(application))
-
 
         binding.recyclerview.apply {
             adapter = recyclerAdapter
@@ -128,18 +98,8 @@ class MainActivity : AppCompatActivity(), RobotLifecycleCallbacks {
             )
         }
 
-
-        Log.i(com.leet.pepperapp.TAG, "onCreate: ${listChat.size}")
-
         recyclerAdapter.setData(listChat)
         binding.recyclerview.smoothScrollToPosition(listChat.size - 1)
-
-
-
-
-
-
-
 
         lifecycleScope.launch {
             chatAppViewModel.responseResult.collect { response ->
@@ -156,45 +116,25 @@ class MainActivity : AppCompatActivity(), RobotLifecycleCallbacks {
 //                        textView.text = "You : ${response.data?.question.toString()} \n\n\n\n " +
 //                                "Pepper : ${response.data?.text.toString()}"
 
-//                        addField(response.data?.question.toString())
 
-                        listChat.add(
-                            ChatData(
-                                message = response.data?.question.toString(),
-                                type = "USER"
-                            )
+                        addMessage(
+                            message = response.data?.question.toString(),
+                            type = "USER"
                         )
-
-                        recyclerAdapter.setData(listChat)
-                        recyclerAdapter.notifyDataSetChanged()
-
-                        binding.recyclerview.smoothScrollToPosition(listChat.size - 1)
-
-
-
 
                         delay(3000L)
 
-                        listChat.add(
-                            ChatData(
-                                message = response.data?.text.toString(),
-                                type = "PEPPER"
-                            )
+
+                        addMessage(
+                            message = response.data?.text.toString(),
+                            type = "PEPPER"
                         )
-                        recyclerAdapter.setData(listChat)
-                        recyclerAdapter.notifyDataSetChanged()
-
-                        binding.recyclerview.smoothScrollToPosition(listChat.size - 1)
-
-//                        addField(response.data?.text.toString())
-
 
 
                         papperTalk = response.data?.text.toString()
 
                         pepperSay = true
 
-                        recordButton.isEnabled = true
 
                     }
 
@@ -202,16 +142,48 @@ class MainActivity : AppCompatActivity(), RobotLifecycleCallbacks {
                         response.error?.let { it1 ->
                             Log.i("Hello Error", it1)
                         }
+
+
+                        showAnimation("error.json")
+
+                        Handler(Looper.getMainLooper()).postDelayed({
+                            stopAnimation()
+                        }, 3000L)
+
+                        papperTalk = resource.pepperErrorMsg
+                        pepperSay = true
+
                     }
 
-                    is ResultApi.Listening -> TODO()
+                    is ResultApi.Listening -> {
+                        TODO()
+                    }
                     is ResultApi.Thinking -> {
                         Log.i("Hello Thinking", "Response********")
+                        papperTalk = "Hmmmmmmmmmmmmmmm"
+                        pepperSay = true
                         stopAnimation()
                     }
                 }
             }
         }
+    }
+
+
+    @SuppressLint("NotifyDataSetChanged")
+    private fun addMessage(message : String, type : String) {
+        listChat.add(
+            ChatData(
+                message = message,
+                type = type
+            )
+        )
+
+        recyclerAdapter.setData(listChat)
+        recyclerAdapter.notifyDataSetChanged()
+
+        binding.recyclerview.smoothScrollToPosition(listChat.size - 1)
+
     }
 
 
@@ -256,8 +228,8 @@ class MainActivity : AppCompatActivity(), RobotLifecycleCallbacks {
         Log.i(TAG, "Audio record is permitted")
     }
 
-    private fun showAnimation()  {
-        animation.setAnimation("record.json")
+    private fun showAnimation(file : String)  {
+        animation.setAnimation(file)
         animation.visibility = View.VISIBLE
         animation.playAnimation()
     }
@@ -274,7 +246,7 @@ class MainActivity : AppCompatActivity(), RobotLifecycleCallbacks {
 
 
     private fun onclick() {
-        showAnimation()
+        showAnimation("record.json")
 
         recordButton.isEnabled = false
 
@@ -308,22 +280,26 @@ class MainActivity : AppCompatActivity(), RobotLifecycleCallbacks {
 
         say.run()
 
+        runOnUiThread {
+            recordButton.isEnabled = true
+        }
+
 
         while (true) {
             if (pepperSay) {
-                val sayAnswer: Say = SayBuilder.with(qiContext)
+                val sayAnswer:  Say = SayBuilder.with(qiContext)
                     .withText(papperTalk)
                     .build()
 
                 sayAnswer.run()
 
-                recordButton.isEnabled = false
-
-
                 papperTalk = ""
 
+                runOnUiThread {
+                    Log.i("Hello Done", "Sala lhadra")
+                    recordButton.isEnabled = true
+                }
                 pepperSay = false
-//                pepperListening = true
             }
         }
 

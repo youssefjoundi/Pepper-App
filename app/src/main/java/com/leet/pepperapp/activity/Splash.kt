@@ -13,7 +13,6 @@ import com.airbnb.lottie.LottieAnimationView
 import com.leet.pepperapp.MainActivity
 import com.leet.pepperapp.R
 
-@Suppress("DEPRECATION")
 class Splash : AppCompatActivity() {
 
 

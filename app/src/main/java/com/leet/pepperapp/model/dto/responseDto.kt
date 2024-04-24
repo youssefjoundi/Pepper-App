@@ -5,12 +5,8 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class reponseDto(
-    @SerialName("chatId")
-    val chatId: String?,
-    @SerialName("chatMessageId")
-    val chatMessageId: String?,
     @SerialName("question")
     val question: String?,
     @SerialName("text")
-    val text: String?
+    val text: String?,
 )

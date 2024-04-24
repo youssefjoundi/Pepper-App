@@ -53,10 +53,13 @@ class AppViewModel @Inject constructor(
         when(state) {
             "think" -> {
                 _chatresponse.value = ResultApi.Thinking()
-                Log.i("Hello ", "From ViewModel : $state")
+                Log.i("Hello Think", "From ViewModel : $state")
             }
             "init" -> {
-                Log.i("Hello ", "From ViewModel : $state")
+                Log.i("Hello init", "From ViewModel : $state")
+            }
+            "listen" -> {
+                Log.i("Hello listen", "From ViewModel : $state")
             }
         }
     }
