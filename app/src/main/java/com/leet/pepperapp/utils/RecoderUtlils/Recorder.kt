@@ -155,9 +155,10 @@ class Recorder(private val mContext: Context) {
                 bytesPerSample
             )
 
-            chatAppViewModel.pepperState("think")
 
             chatAppViewModel.fetchChatResponse(mWavFilePath)
+
+            chatAppViewModel.pepperState("think")
 
 
 

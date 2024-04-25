@@ -9,7 +9,7 @@ object resource {
     const val pepperUrl = "http://143.198.2.149:9090/pepper/api/"
 
 
-    const val pepperErrorMsg = "Sorry but I can't assist you right now"
+    const val pepperErrorMsg = "Sorry but I can't assist you right now please try later and thank you"
 
 
 }

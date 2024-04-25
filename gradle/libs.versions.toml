@@ -20,6 +20,7 @@ constraintlayout = "2.1.4"
 navigationCompose = "2.5.2"
 qisdk = "1.7.5"
 qisdkDesign = "1.7.5"
+typewriterTextview = "v1.3"
 
 
 [libraries]
@@ -46,6 +47,7 @@ androidx-activity = { group = "androidx.activity", name = "activity", version.re
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 qisdk-design = { module = "com.aldebaran:qisdk-design", version.ref = "qisdkDesign" }
 qisdk = { module = "com.aldebaran:qisdk", version.ref = "qisdk" }
+typewriter-textview = { module = "com.github.NitishGadangi:TypeWriter-TextView", version.ref = "typewriterTextview" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

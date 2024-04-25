@@ -31,6 +31,7 @@ class AppViewModel @Inject constructor(
 
     fun fetchChatResponse(message : String?) {
 
+
         viewModelScope.launch {
 
             Log.i("Hello ", "From ViewModel : $message")
@@ -60,6 +61,11 @@ class AppViewModel @Inject constructor(
             }
             "listen" -> {
                 Log.i("Hello listen", "From ViewModel : $state")
+                _chatresponse.value = ResultApi.Listening()
+
+            }
+            "done" -> {
+                _chatresponse.value = ResultApi.Done()
             }
         }
     }

@@ -20,7 +20,6 @@ dependencyResolutionManagement {
             url 'http://android.aldebaran.com/sdk/maven'
             allowInsecureProtocol true
         }
-
     }
 }
 

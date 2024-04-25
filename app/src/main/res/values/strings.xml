@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Pepper App</string>
+    <string name="app_name">Smart Pepper</string>
     <string name="start">Start</string>
     <string name="stop">Stop</string>
     <string name="speech_recognition">Click To Ask Pepper</string>

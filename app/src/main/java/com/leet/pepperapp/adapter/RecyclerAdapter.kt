@@ -1,19 +1,17 @@
 package com.leet.pepperapp.adapter
 
 import android.annotation.SuppressLint
-import android.content.Context
-import android.content.Intent
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import android.view.animation.AnimationUtils
 import androidx.recyclerview.widget.RecyclerView
-import com.leet.pepperapp.MainActivity
-import com.leet.pepperapp.R
+import com.google.android.material.behavior.HideBottomViewOnScrollBehavior
 import com.leet.pepperapp.databinding.PepperItemBinding
 import com.leet.pepperapp.databinding.UserItemBinding
 import com.leet.pepperapp.model.ChatData
+import com.leet.pepperapp.viewmodel.AppViewModel
 
 class RecyclerAdapter() : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
@@ -52,7 +50,7 @@ class RecyclerAdapter() : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         if (listOfChat[position].type == "USER")
             (holder as UserViewHolder).bind(listOfChat[position])
         else
-            (holder as PepperViewHolder).bind(listOfChat[position])
+            (holder as PepperViewHolder).bind(listOfChat[position], position)
     }
 
     override fun getItemViewType(position: Int): Int {
@@ -67,19 +65,59 @@ class RecyclerAdapter() : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         notifyDataSetChanged()
     }
 
-    fun getData(): List<ChatData> {
-        return listOfChat
-    }
+
 
     inner class PepperViewHolder(private val binding: PepperItemBinding) : RecyclerView.ViewHolder(binding.root) {
-        fun bind(chat: ChatData) {
+        fun bind(chat: ChatData, position: Int) {
+
             binding.apply {
                 chat.also {
-                    pepperText.text = chat.message
+                    pepperText.text = ""
+
+//                    if (position == getData().size - 1 && isInsert)
+//                    {
+//
+//                        Log.i("Hello from check", "check : ${pepperText.maxWidth}")
+//                        Log.i("Hello from check", "check : ${pepperText.paint.measureText(pepperText.text.toString())}")
+//
+//
+//                        var time = 0L
+//
+//
+//
+//
+//                        chat.message.forEach { char ->
+//
+//
+//                            Handler(Looper.getMainLooper()).postDelayed({
+//                                pepperText.append(char.toString())
+//                                tmp += char.toString()
+//                                val size = pepperText.paint.measureText(tmp + 30)
+//                                if (size > pepperText.maxWidth) {
+//                                    tmp = ""
+//                                    // The text exceeds the maximum width
+//                                    Log.i("Hello from check", "check")
+//
+//                                    chatAppviewModel?.pepperState("listen")
+//
+//                                }
+//                            }, time)
+//
+//                            time += 30
+//                        }
+//
+//
+//                        isInsert = false
+//                    }
+//                    else {
+                        pepperText.text = chat.message
+//                    }
+
                 }
             }
         }
     }
+
 
     inner class UserViewHolder(private val binding: UserItemBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(chat: ChatData) {
