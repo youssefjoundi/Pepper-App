@@ -28,6 +28,7 @@ import com.aldebaran.qi.sdk.builder.AnimateBuilder
 import com.aldebaran.qi.sdk.builder.AnimationBuilder
 import com.aldebaran.qi.sdk.builder.SayBuilder
 import com.aldebaran.qi.sdk.`object`.actuation.Animation
+import com.aldebaran.qi.sdk.`object`.conversation.BodyLanguageOption
 import com.aldebaran.qi.sdk.`object`.conversation.Say
 import com.aldebaran.qi.sdk.`object`.human.Human
 import com.aldebaran.qi.sdk.`object`.humanawareness.HumanAwareness
@@ -507,8 +508,6 @@ class MainActivity : AppCompatActivity(), RobotLifecycleCallbacks {
                 papperTalk = ""
                 pepperSay = false
                 chatAppViewModel.pepperState("done")
-
-
                 sayError = false
             }
 
@@ -522,6 +521,7 @@ class MainActivity : AppCompatActivity(), RobotLifecycleCallbacks {
             if (pepperThink) {
                 val sayAnswer: Say? = SayBuilder.with(qiContext)
                     .withText(papperTalk)
+//                    .withBodyLanguageOption(BodyLanguageOption.DISABLED)
                     .build()
                 sayAnswer?.async()?.run()
                 papperTalk = ""
