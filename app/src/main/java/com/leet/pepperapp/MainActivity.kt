@@ -18,9 +18,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.airbnb.lottie.LottieAnimationView
-import com.aldebaran.qi.Future
 import com.aldebaran.qi.sdk.QiContext
 import com.aldebaran.qi.sdk.QiSDK
 import com.aldebaran.qi.sdk.RobotLifecycleCallbacks
@@ -28,7 +26,6 @@ import com.aldebaran.qi.sdk.builder.AnimateBuilder
 import com.aldebaran.qi.sdk.builder.AnimationBuilder
 import com.aldebaran.qi.sdk.builder.SayBuilder
 import com.aldebaran.qi.sdk.`object`.actuation.Animation
-import com.aldebaran.qi.sdk.`object`.conversation.BodyLanguageOption
 import com.aldebaran.qi.sdk.`object`.conversation.Say
 import com.aldebaran.qi.sdk.`object`.human.Human
 import com.aldebaran.qi.sdk.`object`.humanawareness.HumanAwareness
@@ -45,7 +42,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File
 
-private const val TAG = "Pepper-App"
 private const val REQUEST_RECORD_AUDIO_PERMISSION = 200
 
 @Suppress("DEPRECATION")
@@ -56,7 +52,6 @@ class MainActivity : AppCompatActivity(), RobotLifecycleCallbacks {
     private val chatAppViewModel: AppViewModel by viewModels()
 
 
-    private lateinit var recycleview : RecyclerView
     private lateinit var recordButton: Button
 //    private lateinit var textView: TextView
     private lateinit var animation : LottieAnimationView
@@ -73,7 +68,7 @@ class MainActivity : AppCompatActivity(), RobotLifecycleCallbacks {
 
 
     private val recorder: Recorder = Recorder(this)
-    private lateinit var papperTalk : String
+    private var papperTalk : String = ""
 
     @Volatile
     private var pepperSay: Boolean = false
@@ -86,6 +81,12 @@ class MainActivity : AppCompatActivity(), RobotLifecycleCallbacks {
 
     @Volatile
     private var sayError: Boolean = false
+
+    @Volatile
+    private var startDetectpeople: Boolean = false
+
+
+    private var previousSize : Int = 0
 
 
     @Volatile
@@ -112,7 +113,7 @@ class MainActivity : AppCompatActivity(), RobotLifecycleCallbacks {
     private lateinit var listChat : MutableList<ChatData>
 
 
-    @SuppressLint("SetTextI18n", "MissingInflatedId")
+    @SuppressLint("SetTextI18n", "MissingInflatedId", "InflateParams")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
@@ -171,10 +172,7 @@ class MainActivity : AppCompatActivity(), RobotLifecycleCallbacks {
                         delay(1000L)
 
 
-                        addMessage(
-                            message = response.data?.text.toString(),
-                            type = "PEPPER"
-                        )
+
 
 
                         papperTalk = response.data?.text.toString()
@@ -205,13 +203,14 @@ class MainActivity : AppCompatActivity(), RobotLifecycleCallbacks {
                     }
 
                     is ResultApi.Listening -> {
-                        animationFile = R.raw.listen_animation
+                        animationFile = R.raw.listen_animation_2
                         animationStarted = true
                     }
 
                     is ResultApi.Thinking -> {
                         Log.i("Hello Thinking", "Response********")
                         stopAnimation()
+                        showAnimation("think_animation.json")
                         papperTalk = "mmm"
                         pepperThink = true
                         animationFile = R.raw.thinking_animation
@@ -225,17 +224,20 @@ class MainActivity : AppCompatActivity(), RobotLifecycleCallbacks {
                             dialog.dismiss()
                             stopAnimation()
                             disableAndEnableUiWhenPepperTalking(true)
-
+                            if (papperTalk.isNotEmpty()) {
+                                addMessage(
+                                    message = papperTalk,
+                                    type = "PEPPER"
+                                )
+                            }
+                            papperTalk = ""
+                            startDetectpeople = true
                         }
 
                     }
                 }
             }
         }
-
-        recycleview = findViewById(R.id.recyclerview)
-
-
 
         dialog = Dialog(this)
         inflater = layoutInflater
@@ -274,23 +276,6 @@ class MainActivity : AppCompatActivity(), RobotLifecycleCallbacks {
 
             time += 20
         }
-
-//
-//        PepperTalk.setCharacterDelay(35)
-//
-//        PepperTalk.animateText("messagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessage" +
-//                "messagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessage" +
-//                "messagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessage" +
-//                "messagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessage" +
-//                "messagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessage" +
-//                "messagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessage" +
-//                "messagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessage" +
-//                "messagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessage" +
-//                "messagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessagemessage" +
-//                "")
-
-
-
 
         dialog.window?.decorView?.systemUiVisibility = (
                 View.SYSTEM_UI_FLAG_IMMERSIVE
@@ -404,6 +389,8 @@ class MainActivity : AppCompatActivity(), RobotLifecycleCallbacks {
 
         chatAppViewModel.pepperState("listen")
 
+        startDetectpeople = true
+
 
         recordButton.isEnabled = false
 
@@ -460,43 +447,60 @@ class MainActivity : AppCompatActivity(), RobotLifecycleCallbacks {
 
     override fun onRobotFocusGained(qiContext: QiContext?) {
 
-
-        // Store the provided QiContext.
         this.qiContext = qiContext
 
-        // Get the HumanAwareness service from the QiContext.
         qiContext?.let {
             humanAwareness = it.humanAwareness
         }
 
 
-        val human = findHumansAround()
+        var humansAround: MutableList<Human>? = humanAwareness?.humansAround
 
-        human?.andThenConsume { humansAround -> Log.i(TAG, "${humansAround.size} human(s) around.") }
+        humansAround?.let {
+            Log.i(TAG, "Humans Around ${it.size}")
+            previousSize = it.size
+        }
 
-        // TODO
-        // continue when the humansAround is > 0
 
 
 
         val text = "Hello, I am Pepper , how can I help you"
 
-
-        // Create a new say action.
-        val say: Say = SayBuilder.with(qiContext) // Create the builder with the context.
-            .withText(text) // Set the text to say.
-            .build() // Build the say action.
+        val say: Say = SayBuilder.with(qiContext)
+            .withText(text)
+            .build()
 
         say.run()
 
         runOnUiThread {
-//            recordButton.isEnabled = true
             disableAndEnableUiWhenPepperTalking(true)
         }
 
 
         while (true) {
 
+
+            if (!startDetectpeople)
+            {
+                humansAround = humanAwareness?.humansAround
+                humansAround?.let {
+//                Log.i(TAG, "Humans arounds : ${it.size} , previous : ${previousSize}")
+                    if (it.size > 0 && previousSize == 0) {
+
+                        val sayAnswer: Say? = SayBuilder.with(qiContext)
+                            .withText("Hello I am pepper please come to ask me and thank you")
+                            .build()
+                        sayAnswer?.run()
+                        chatAppViewModel.pepperState("done")
+                    }
+                    if (it.size == 0) {
+                        runOnUiThread {
+                            disableAndEnableUiWhenPepperTalking(false)
+                        }
+                    }
+                    previousSize = it.size
+                }
+            }
 
             if (sayError) {
                 startAnimation(R.raw.error_animation, qiContext!!)
@@ -505,7 +509,6 @@ class MainActivity : AppCompatActivity(), RobotLifecycleCallbacks {
                     .withText(papperTalk)
                     .build()
                 sayAnswer?.run()
-                papperTalk = ""
                 pepperSay = false
                 chatAppViewModel.pepperState("done")
                 sayError = false
@@ -541,7 +544,6 @@ class MainActivity : AppCompatActivity(), RobotLifecycleCallbacks {
                     .withText(papperTalk)
                     .build()
                 sayAnswer?.run()
-                papperTalk = ""
                 pepperSay = false
                 chatAppViewModel.pepperState("done")
             }
@@ -554,17 +556,6 @@ class MainActivity : AppCompatActivity(), RobotLifecycleCallbacks {
         this.qiContext = null
 
     }
-
-
-    private fun findHumansAround(): Future<List<Human>>? {
-        // Get the humans around the robot.
-        val humansAroundFuture: Future<List<Human>>? = humanAwareness?.async()?.humansAround
-        val num = humansAroundFuture
-
-
-        return num
-    }
-
 
 
 

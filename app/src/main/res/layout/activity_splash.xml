@@ -21,18 +21,19 @@
             android:layout_height="400dp"
             app:lottie_autoPlay="true"
             app:lottie_loop="true"
-            app:lottie_rawRes="@raw/my_animation"
+            android:layout_marginBottom="100dp"
+            app:lottie_rawRes="@raw/welcome_animation"
             tools:ignore="MissingConstraints" />
 
     </LinearLayout>
 
     <TextView
         android:layout_width="match_parent"
-        android:layout_height="60dp"
+        android:layout_height="100dp"
         android:gravity="center_horizontal|center_vertical"
         tools:ignore="MissingConstraints"
         android:layout_alignParentBottom="true"
-        android:layout_marginBottom="56dp"
+        android:layout_marginBottom="100dp"
         android:text="@string/smart_pepper"
         android:textSize="50sp"
         android:fontFamily="@font/font"

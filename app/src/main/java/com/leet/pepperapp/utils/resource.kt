@@ -12,4 +12,12 @@ object resource {
     const val pepperErrorMsg = "Sorry but I can't assist you right now please try later and thank you"
 
 
+    const val welcomingMessage = "Hi ..........."
+
+
+    const val invitePeopleMessage = "Hi Can to ask me something"
+
+
+
+
 }

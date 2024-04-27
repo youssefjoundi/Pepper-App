@@ -81,7 +81,7 @@ class Recorder(private val mContext: Context) {
                 AudioRecord(audioSource, sampleRateInHz, channelConfig, audioFormat, bufferSize)
             audioRecord.startRecording()
             val bufferSize1Sec = sampleRateInHz * bytesPerSample * channels
-            val bufferSize30Sec = bufferSize1Sec * 6
+            val bufferSize30Sec = bufferSize1Sec * 30
             val buffer30Sec = ByteBuffer.allocateDirect(bufferSize30Sec)
             val bufferRealtime = ByteBuffer.allocateDirect(bufferSize1Sec * 5)
             var timer = 0
@@ -92,7 +92,7 @@ class Recorder(private val mContext: Context) {
 
             while (mInProgress.get() && totalBytesRead < bufferSize30Sec) {
                 val bytesRead = audioRecord.read(audioData, 0, bufferSize)
-                if (bytesRead > 0 ) {
+                if (bytesRead > 0 && buffer30Sec.remaining() >= bytesRead) {
                     buffer30Sec.put(audioData, 0, bytesRead)
                     bufferRealtime.put(audioData, 0, bytesRead)
                     Base64.encodeToString(audioData, Base64.DEFAULT)
@@ -140,6 +140,9 @@ class Recorder(private val mContext: Context) {
                     }
                 }
             }
+
+            // After the loop, prepare buffer for reading
+            buffer30Sec.flip()
 
 
             audioRecord.stop()
