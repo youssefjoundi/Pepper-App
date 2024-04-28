@@ -203,8 +203,8 @@ class MainActivity : AppCompatActivity(), RobotLifecycleCallbacks {
                     }
 
                     is ResultApi.Listening -> {
-                        animationFile = R.raw.listen_animation_2
-                        animationStarted = true
+//                        animationFile = R.raw.listen_animation_2
+//                        animationStarted = true
                     }
 
                     is ResultApi.Thinking -> {
@@ -219,20 +219,19 @@ class MainActivity : AppCompatActivity(), RobotLifecycleCallbacks {
 
                     is ResultApi.Done -> {
                         Log.i("Hello Done", "Pepper Done Talking")
-                        runOnUiThread {
-                            hideSystemUI()
-                            dialog.dismiss()
-                            stopAnimation()
-                            disableAndEnableUiWhenPepperTalking(true)
-                            if (papperTalk.isNotEmpty()) {
-                                addMessage(
-                                    message = papperTalk,
-                                    type = "PEPPER"
-                                )
-                            }
-                            papperTalk = ""
-                            startDetectpeople = true
+                        hideSystemUI()
+                        dialog.dismiss()
+                        stopAnimation()
+                        disableAndEnableUiWhenPepperTalking(true)
+                        if (papperTalk.isNotEmpty()) {
+                            addMessage(
+                                message = papperTalk,
+                                type = "PEPPER"
+                            )
                         }
+                        papperTalk = ""
+                        delay(2000L)
+                        startDetectpeople = false
 
                     }
                 }

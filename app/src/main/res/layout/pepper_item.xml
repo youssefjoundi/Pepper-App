@@ -13,7 +13,7 @@
         android:layout_height="40dp"
         android:layout_marginStart="16dp"
         android:contentDescription="@string/papper_icon"
-        android:src="@mipmap/ic_launcher"
+        android:src="@drawable/pepper_chat_icon"
         app:layout_constraintStart_toStartOf="parent"
         app:shapeAppearanceOverlay="@style/Circular"
         tools:ignore="MissingConstraints" />
