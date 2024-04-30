@@ -19,14 +19,29 @@ import androidx.core.app.ActivityCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.airbnb.lottie.LottieAnimationView
+import com.aldebaran.qi.Future
 import com.aldebaran.qi.sdk.QiContext
 import com.aldebaran.qi.sdk.QiSDK
 import com.aldebaran.qi.sdk.RobotLifecycleCallbacks
 import com.aldebaran.qi.sdk.builder.AnimateBuilder
 import com.aldebaran.qi.sdk.builder.AnimationBuilder
+import com.aldebaran.qi.sdk.builder.GoToBuilder
+import com.aldebaran.qi.sdk.builder.LocalizeAndMapBuilder
+import com.aldebaran.qi.sdk.builder.LocalizeBuilder
 import com.aldebaran.qi.sdk.builder.SayBuilder
+import com.aldebaran.qi.sdk.builder.TransformBuilder
+import com.aldebaran.qi.sdk.`object`.actuation.Actuation
 import com.aldebaran.qi.sdk.`object`.actuation.Animation
+import com.aldebaran.qi.sdk.`object`.actuation.ExplorationMap
+import com.aldebaran.qi.sdk.`object`.actuation.Frame
+import com.aldebaran.qi.sdk.`object`.actuation.FreeFrame
+import com.aldebaran.qi.sdk.`object`.actuation.GoTo
+import com.aldebaran.qi.sdk.`object`.actuation.LocalizationStatus
+import com.aldebaran.qi.sdk.`object`.actuation.Localize
+import com.aldebaran.qi.sdk.`object`.actuation.LocalizeAndMap
+import com.aldebaran.qi.sdk.`object`.actuation.Mapping
 import com.aldebaran.qi.sdk.`object`.conversation.Say
+import com.aldebaran.qi.sdk.`object`.geometry.Transform
 import com.aldebaran.qi.sdk.`object`.human.Human
 import com.aldebaran.qi.sdk.`object`.humanawareness.HumanAwareness
 import com.leet.pepperapp.adapter.RecyclerAdapter
@@ -73,6 +88,9 @@ class MainActivity : AppCompatActivity(), RobotLifecycleCallbacks {
     @Volatile
     private var pepperSay: Boolean = false
 
+    // Store the GoTo action.
+    private var goTo: GoTo? = null
+
     @Volatile
     private var pepperThink: Boolean = false
 
@@ -85,12 +103,17 @@ class MainActivity : AppCompatActivity(), RobotLifecycleCallbacks {
     @Volatile
     private var startDetectpeople: Boolean = false
 
+    @Volatile
+    private var movePepper: Boolean = false
+
 
     private var previousSize : Int = 0
 
 
     @Volatile
     private var animationFile: Int = 0
+
+
 
 
     // Detect Human
@@ -234,6 +257,12 @@ class MainActivity : AppCompatActivity(), RobotLifecycleCallbacks {
                         startDetectpeople = false
 
                     }
+
+                    is ResultApi.Move -> {
+                        movePepper = true
+                        delay(4000L)
+                        movePepper = false
+                    }
                 }
             }
         }
@@ -359,19 +388,17 @@ class MainActivity : AppCompatActivity(), RobotLifecycleCallbacks {
         animation.playAnimation()
     }
 
-
-
     val stopAnimation : () -> Unit = {
         animation.visibility = View.GONE
         animation.cancelAnimation()
     }
 
 
+
     private fun disableAndEnableUiWhenPepperTalking(a : Boolean) {
         recordButton.isEnabled = a
         recordButton.isClickable = a
     }
-
 
 
     private fun onclick() {
@@ -399,6 +426,10 @@ class MainActivity : AppCompatActivity(), RobotLifecycleCallbacks {
 
         recorder.start(chatAppViewModel)
     }
+
+
+
+
 
 
 
@@ -440,17 +471,68 @@ class MainActivity : AppCompatActivity(), RobotLifecycleCallbacks {
     }
 
 
+    private fun moveArround(qiContext: QiContext?) {
+        // Get the Actuation service from the QiContext.
+        val actuation: Actuation? = qiContext?.actuation
+
+        // Get the robot frame.
+        val robotFrame: Frame? = actuation?.robotFrame()
+
+        // Create a transform corresponding to a 1 meter forward translation.
+        val transform: Transform = TransformBuilder.create().from2DTransform(1.0, 1.0, 2.0)
+        // Get the Mapping service from the QiContext.
+        val mapping: Mapping? = qiContext?.mapping
+
+        // Create a FreeFrame with the Mapping service.
+        val targetFrame: FreeFrame? = mapping?.makeFreeFrame()
+
+        // Update the target location relatively to Pepper's current location.
+        if (targetFrame != null) {
+            targetFrame.update(robotFrame, transform, 0L)
+        }
+
+        if (targetFrame != null) {
+            goTo = GoToBuilder.with(qiContext) // Create the builder with the QiContext.
+                .withFrame(targetFrame.frame()) // Set the target frame.
+                .build()
+        } // Build the GoTo action.
+
+        goTo?.addOnStartedListener { Log.i(TAG, "GoTo action started.") }
+        // Execute the GoTo action asynchronously.
+//        val goToFuture: Future<Void>? = goTo?.async()?.run()
+        val goToFuture: Future<Void>? = goTo?.async()?.run()
+
+
+        // Add a lambda to the action execution.
+        goToFuture?.thenConsume { future ->
+            if (future.isSuccess) {
+                Log.i(TAG, "GoTo action finished with success.")
+            } else if (future.hasError()) {
+                Log.e(TAG, "GoTo action finished with error.", future.error)
+            }
+        }
+
+    }
+
 
 
 
 
     override fun onRobotFocusGained(qiContext: QiContext?) {
 
+
+
         this.qiContext = qiContext
 
         qiContext?.let {
             humanAwareness = it.humanAwareness
         }
+
+        if (qiContext != null) {
+            startMapping(qiContext)
+        }
+
+        // Get the robot frame.
 
 
         var humansAround: MutableList<Human>? = humanAwareness?.humansAround
@@ -485,17 +567,34 @@ class MainActivity : AppCompatActivity(), RobotLifecycleCallbacks {
                 humansAround?.let {
 //                Log.i(TAG, "Humans arounds : ${it.size} , previous : ${previousSize}")
                     if (it.size > 0 && previousSize == 0) {
+//                        // Remove on status changed listeners from the LocalizeAndMap action.
+//                        localizeAndMap.removeAllOnStatusChangedListeners()
+//
+//                        // Remove on status changed listeners from the Localize action.
+//                        localize.removeAllOnStatusChangedListeners()
+
+
+
+                        goTo?.removeAllOnStartedListeners()
 
                         val sayAnswer: Say? = SayBuilder.with(qiContext)
-                            .withText("Hello I am pepper please come to ask me and thank you")
+                            .withText("Hello I am pepper how can I help you")
                             .build()
                         sayAnswer?.run()
                         chatAppViewModel.pepperState("done")
                     }
                     if (it.size == 0) {
+
+//                        if (qiContext != null) {
+//                            startMapping(qiContext)
+//                        }
+
                         runOnUiThread {
                             disableAndEnableUiWhenPepperTalking(false)
                         }
+                        chatAppViewModel.pepperState("move")
+                        if (movePepper)
+                            moveArround(qiContext)
                     }
                     previousSize = it.size
                 }
@@ -519,7 +618,6 @@ class MainActivity : AppCompatActivity(), RobotLifecycleCallbacks {
                 animationStarted = false
             }
 
-
             if (pepperThink) {
                 val sayAnswer: Say? = SayBuilder.with(qiContext)
                     .withText(papperTalk)
@@ -531,6 +629,8 @@ class MainActivity : AppCompatActivity(), RobotLifecycleCallbacks {
             }
 
             if (pepperSay) {
+
+
 
                 if (animationFile == 0) {
                     runOnUiThread {
@@ -553,13 +653,95 @@ class MainActivity : AppCompatActivity(), RobotLifecycleCallbacks {
 
     override fun onRobotFocusLost() {
         this.qiContext = null
+        // Remove on started listeners from the GoTo action.
+        goTo?.removeAllOnStartedListeners()
+
+        // Remove on status changed listeners from the LocalizeAndMap action.
+        localizeAndMap.removeAllOnStatusChangedListeners()
+
+        // Remove on status changed listeners from the Localize action.
+        localize.removeAllOnStatusChangedListeners()
 
     }
 
+    // Store the LocalizeAndMap action.
+    private lateinit var localizeAndMap: LocalizeAndMap
+    // Store the map.
+    private var explorationMap: ExplorationMap? = null
+    // Store the LocalizeAndMap execution.
+    private lateinit var localizationAndMapping: Future<Void>
+    // Store the Localize action.
+    private lateinit var localize: Localize
+
+    private fun startMapping(qiContext: QiContext) {
+        // Create a LocalizeAndMap action.
+        localizeAndMap = LocalizeAndMapBuilder.with(qiContext).build()
+
+        // Add an on status changed listener on the LocalizeAndMap action for the robot to say when he is localized.
+        localizeAndMap.addOnStatusChangedListener {
+            if (it == LocalizationStatus.LOCALIZED) {
+                // Dump the ExplorationMap.
+                explorationMap = localizeAndMap.dumpMap()
+
+                val message = "Robot has mapped his environment."
+                Log.i(TAG, message)
+
+                // Cancel the LocalizeAndMap action.
+                localizationAndMapping.requestCancellation()
+            }
+        }
+
+        val message = "Mapping..."
+        Log.i(TAG, message)
+
+        // Execute the LocalizeAndMap action asynchronously.
+        localizationAndMapping = localizeAndMap.async().run()
+
+        // Add a lambda to the action execution.
+        localizationAndMapping.thenConsume {
+            if (it.hasError()) {
+                val errorMessage = "LocalizeAndMap action finished with error."
+                Log.e(TAG, errorMessage, it.error)
+            } else if (it.isCancelled) {
+                startLocalizing(qiContext)
+            }
+        }
+    }
+
+    private fun startLocalizing(qiContext: QiContext) {
+        // Create a Localize action.
+        localize = LocalizeBuilder.with(qiContext)
+            .withMap(explorationMap)
+            .build()
+
+        // Add an on status changed listener on the Localize action for the robot to say when he is localized.
+        localize.addOnStatusChangedListener {
+            if (it == LocalizationStatus.LOCALIZED) {
+                val message = "Robot is localized."
+                Log.i(TAG, message)
+
+            }
+        }
+
+        val message = "Localizing..."
+        Log.i(TAG, message)
+
+        // Execute the Localize action asynchronously.
+        val localization = localize.async().run()
+
+        // Add a lambda to the action execution.
+        localization?.thenConsume {
+            if (it.hasError()) {
+                val errorMessage = "Localize action finished with error."
+                Log.e(TAG, errorMessage, it.error)
+            }
+        }
+    }
 
 
     override fun onRobotFocusRefused(reason: String?) {
-        TODO("Not yet implemented")
+
+
     }
 
 }

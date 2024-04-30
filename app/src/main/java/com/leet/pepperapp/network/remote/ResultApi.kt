@@ -7,4 +7,5 @@ sealed class ResultApi<T>(val data:T?=null, val error:String?=null){
     class Thinking<T>:ResultApi<T>()
     class Listening<T>:ResultApi<T>()
     class Done<T>:ResultApi<T>()
+    class Move<T>:ResultApi<T>()
 }

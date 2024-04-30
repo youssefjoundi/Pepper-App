@@ -38,27 +38,27 @@ class ChatApiImpl  @Inject constructor(private val client: HttpClient) : ChatApi
 
 
 
-//                    client.post {
-//                        url(resource.pepperUrl)
-//                        setBody(
-//                            MultiPartFormDataContent(
-//                                formData {
-//                                    file?.readBytes()?.let {
-//                                        append("audio", it, Headers.build {
-//                                            append(HttpHeaders.ContentDisposition, "filename=$audioPath")
-//                                        })
-//                                    }
-//                                }
-//                            )
-//                        )
-//                    }.body<reponseDto>()
-
-
                     client.post {
-                        url(resource.flowiseUrl)
-                        setBody("{\"question\" : \"what is the best solution to learn football\"}")
-                        contentType(ContentType.Application.Json)
+                        url(resource.pepperUrl)
+                        setBody(
+                            MultiPartFormDataContent(
+                                formData {
+                                    file?.readBytes()?.let {
+                                        append("audio", it, Headers.build {
+                                            append(HttpHeaders.ContentDisposition, "filename=$audioPath")
+                                        })
+                                    }
+                                }
+                            )
+                        )
                     }.body<reponseDto>()
+
+
+//                    client.post {
+//                        url(resource.flowiseUrl)
+//                        setBody("{\"question\" : \"what is the best solution to learn football\"}")
+//                        contentType(ContentType.Application.Json)
+//                    }.body<reponseDto>()
 
                 )
             )

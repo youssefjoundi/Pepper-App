@@ -67,6 +67,9 @@ class AppViewModel @Inject constructor(
             "done" -> {
                 _chatresponse.value = ResultApi.Done()
             }
+            "move" -> {
+                _chatresponse.value = ResultApi.Move()
+            }
         }
     }
 
